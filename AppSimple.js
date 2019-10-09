@@ -29,70 +29,82 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 const App: () => React$Node = () => {
   let [transition, setTransition] = useState(false);
   let [move, setMove] = useState(false);
-  let position = useRef(new Animated.Value(0));
+  let [position] = useState(() => new Animated.Value(0));
   let startAncestor = useRef(null);
   let startNode = useRef(null);
   let endAncestor = useRef(null);
   let endNode = useRef(null);
 
   return (
-    <SafeAreaView>
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={styles.scrollView}>
-        <Button
-          title="press"
-          onPress={() => {
-            setTransition(true);
-            setMove(e => !e)
-            Animated.timing(position.current, {
-              toValue: move ? 0 : 1,
-              duration: 300,
-            }).start(() => {
-              setTransition(false);
-            });
-          }}
-        />
-        <View style={{ opacity: move ? 0 : 1 }} ref={e => (startAncestor.current = nodeFromRef(e))}>
-          <SharedElement onNode={node => startNode.current = node}>
-            <Image
-              source={{
-                uri:
-                  'https://cdn3.f-cdn.com/contestentries/1211056/26652088/5a3a9f3881f43_thumb900.jpg',
-              }}
-              style={{width: 200, aspectRatio: 1}}
-            />
-          </SharedElement>
-        </View>
-        <View style={{ opacity: move ? 1 : 0 }} ref={e => (endAncestor.current = nodeFromRef(e))}>
-          <SharedElement onNode={node => endNode.current = node}>
-            <Image
-              source={{
-                uri:
-                  'https://cdn3.f-cdn.com/contestentries/1211056/26652088/5a3a9f3881f43_thumb900.jpg',
-              }}
-              style={{width: 200, aspectRatio: 1}}
-            />
-          </SharedElement>
-        </View>
-      </ScrollView>
-      {transition && (
-        <SharedElementTransition
-          start={{
-            node: startNode.current,
-            ancestor: startAncestor.current,
-          }}
-          end={{
-            node: endNode.current,
-            ancestor: endAncestor.current,
-          }}
-          position={position.current}
-          animation="move"
-          resize="none"
-          align="auto"
-        />
-      )}
-    </SafeAreaView>
+    <React.Fragment>
+      <SafeAreaView>
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          style={styles.scrollView}>
+          <Button
+            title="press"
+            onPress={() => {
+              setTransition(true);
+              setMove(e => !e);
+              position.setValue(move ? 1 : 0);
+              Animated.timing(position, {
+                toValue: move ? 0 : 1,
+                duration: 300,
+                useNativeDriver: true,
+              }).start(() => {
+                setTransition(false);
+              });
+            }}
+          />
+          <View
+            style={{opacity: move ? 0 : 1}}
+            collapsable={false}
+            ref={e => (startAncestor.current = nodeFromRef(e))}>
+            <SharedElement onNode={node => (startNode.current = node)}>
+              <Image
+                source={{
+                  uri:
+                    'https://cdn3.f-cdn.com/contestentries/1211056/26652088/5a3a9f3881f43_thumb900.jpg',
+                }}
+                style={{width: 200, aspectRatio: 1}}
+              />
+            </SharedElement>
+          </View>
+          <View
+            style={{opacity: move ? 1 : 0}}
+            collapsable={false}
+            ref={e => (endAncestor.current = nodeFromRef(e))}>
+            <SharedElement onNode={node => (endNode.current = node)}>
+              <Image
+                source={{
+                  uri:
+                    'https://cdn3.f-cdn.com/contestentries/1211056/26652088/5a3a9f3881f43_thumb900.jpg',
+                }}
+                style={{width: 200, aspectRatio: 1}}
+              />
+            </SharedElement>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+        {transition && (
+          <SharedElementTransition
+            start={{
+              node: startNode.current,
+              ancestor: startAncestor.current,
+            }}
+            end={{
+              node: endNode.current,
+              ancestor: endAncestor.current,
+            }}
+            position={position}
+            animation="move"
+            resize="none"
+            align="auto"
+          />
+        )}
+      </View>
+    </React.Fragment>
   );
 };
 
